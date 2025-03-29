@@ -1,0 +1,69 @@
+
+    <style>
+      
+        .map-container {
+            position: relative;
+            max-width: 800px;
+            margin: auto;
+        }
+        .marker {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background-color: #EC6932;
+            border: 5px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+                transition: transform 0.3s ease-in-out, border 0.2s ease-in-out;
+
+        }
+        .marker:hover {
+            transform: scale(1.3);
+              border: 2px solid white;
+          
+        }
+        .tooltip {
+            position: absolute;
+            color: white;
+            font-size: 16px;
+            background: #EC6932;
+            border-radius: 1000px;
+            padding: 5px 10px;
+         
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="map-container">
+    <img src="https://agsconsultants.in/wp-content/uploads/2025/02/image-89437.svg" alt="World Map" width="100%">
+    
+    <!-- Markers -->
+    <div class="marker" data-location="USA" style="top: 40%; left: 25%;"></div>
+    <div class="marker" data-location="Europe" style="top: 35%; left: 50%;"></div>
+    <div class="marker" data-location="India" style="top: 50%; left: 67%;"></div>
+    <div class="marker" data-location="Canada" style="top: 20%; left: 30%;"></div>
+</div>
+
+<div id="tooltip" class="tooltip"></div>
+
+<script>
+    document.querySelectorAll('.marker').forEach(marker => {
+        marker.addEventListener('mouseenter', function() {
+            let tooltip = document.getElementById('tooltip');
+            tooltip.innerText = this.getAttribute('data-location');
+            tooltip.style.display = 'block';
+            tooltip.style.left = this.offsetLeft + 'px';
+            tooltip.style.top = (this.offsetTop - 30) + 'px';
+        });
+        
+        marker.addEventListener('mouseleave', function() {
+            document.getElementById('tooltip').style.display = 'none';
+        });
+    });
+</script>
+
+
