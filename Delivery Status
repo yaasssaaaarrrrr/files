@@ -1,0 +1,166 @@
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
+<div class="order-tracker">
+  <!-- Step 1: Ordered -->
+  <div class="step">
+    <div class="icon">
+      <i class="fas fa-shopping-cart"></i>
+    </div>
+    <div class="status">
+      <h4 class="step-title">Ordered</h4>
+      <p class="step-date" id="ordered-date"></p>
+    </div>
+  </div>
+
+  <!-- Step 2: Order Ready -->
+  <div class="step">
+    <div class="icon">
+      <i class="fas fa-box-open"></i>
+    </div>
+    <div class="status">
+      <h4 class="step-title">Order Ready</h4>
+      <p class="step-date" id="order-ready-date"></p>
+    </div>
+  </div>
+
+  <!-- Step 3: Delivered -->
+  <div class="step">
+    <div class="icon">
+      <i class="fas fa-truck"></i>
+    </div>
+    <div class="status">
+      <h4 class="step-title">Delivered</h4>
+      <p class="step-date" id="delivered-date"></p>
+    </div>
+  </div>
+</div>
+<style>
+.order-tracker {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin: 20px 0;
+  position: relative;
+  gap: 20px;
+  padding: 10px 0px 0px 0px;
+}
+
+.step {
+  text-align: center;
+  position: relative;
+  flex: 1;
+}
+
+.fa-box-open{
+z-index:10000;
+}
+
+.step .icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+  color: rgb(14, 27, 77);
+  border: 2px solid rgb(14, 27, 77);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-size: 24px;
+  margin: 0 auto 10px auto;
+  transition: transform 0.3s ease;
+}
+
+.step:hover .icon {
+  transform: scale(1.1);
+}
+
+.step-title {
+  font-size: 14px;
+  color: rgb(14, 27, 77);
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.step-date {
+  font-size: 12px;
+  color: #666;
+}
+
+.order-tracker::before {
+  content: '';
+  position: absolute;
+  top: 33px;
+  left: 10%;
+  right: 5%;
+  height: 2px;
+  background-color: #ddd;
+  z-index: 0;
+    width: 75%;
+
+}
+
+.step::after {
+  content: '';
+  position: absolute;
+  top: 25px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  background: rgb(14, 27, 77);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+.step:first-child::after,
+.step:last-child::after {
+  display: none;
+}
+
+@media (max-width: 768px) {
+.step-date{
+font-size:12px;
+
+}
+}
+
+
+</style>
+
+<script>
+// Function to format date to "Month Day" format (e.g., Oct 17)
+function formatDate(date) {
+  const options = { month: 'short', day: 'numeric' };
+  return new Intl.DateTimeFormat('en-US', options).format(date);
+}
+
+// Get today's date
+const today = new Date();
+
+// Update Ordered Date to Today
+document.getElementById('ordered-date').innerText = formatDate(today);
+
+// Calculate Order Ready (Today or Tomorrow)
+const orderReadyDate = new Date(today);
+let readyText;
+if (today.getHours() < 16) {
+  // If current time is before 4 PM, order is ready today
+  readyText = formatDate(orderReadyDate);
+  document.getElementById('order-ready-date').innerText = readyText; // Only show today
+  document.getElementById('order-ready-date').innerText += ''; // Remove the range
+} else {
+  // If after 4 PM, order is ready tomorrow
+  orderReadyDate.setDate(orderReadyDate.getDate() + 1);
+  readyText = formatDate(orderReadyDate);
+  document.getElementById('order-ready-date').innerText = formatDate(today) + ' - ' + readyText;
+}
+
+// Calculate Delivered Date (Day after Tomorrow or Next Day)
+const deliveryDateStart = new Date(orderReadyDate);
+deliveryDateStart.setDate(deliveryDateStart.getDate() + 6);
+const deliveryDateEnd = new Date(deliveryDateStart);
+deliveryDateEnd.setDate(deliveryDateStart.getDate() + 1);
+document.getElementById('delivered-date').innerText = formatDate(deliveryDateStart) + ' - ' + formatDate(deliveryDateEnd);
+
+
+</script>
