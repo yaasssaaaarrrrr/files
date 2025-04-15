@@ -1,0 +1,30 @@
+<div class="fake-view product-block">
+  <span>👀</span>
+  <span class="js-fake-view text-theme" 
+        data-min="{{ product.metafields.custom.min_views | default: 35 }}" 
+        data-max="{{ product.metafields.custom.max_views | default: 50 }}" 
+        data-duration="{{ product.metafields.custom.update_interval | default: 3000 }}">
+    39
+  </span>
+  <span> People are watching this product right now!</span>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var fakeViewElements = document.querySelectorAll('.js-fake-view');
+
+    fakeViewElements.forEach(function(element) {
+      var min = parseInt(element.getAttribute('data-min'), 10);
+      var max = parseInt(element.getAttribute('data-max'), 10);
+      var duration = parseInt(element.getAttribute('data-duration'), 10);
+
+      function updateFakeView() {
+        var randomViewCount = Math.floor(Math.random() * (max - min + 1)) + min;
+        element.textContent = randomViewCount;
+      }
+
+      // Update the view count every [duration] milliseconds
+      setInterval(updateFakeView, duration);
+    });
+  });
+</script>
