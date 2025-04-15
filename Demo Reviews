@@ -1,0 +1,63 @@
+<!-- Product Rating Section -->
+<div class="product-rating">
+  <span class="rating-stars" id="rating-stars"></span>
+  <span class="rating-value" id="rating-value"></span> |
+  <span class="review-count" id="review-count"></span> reviews
+</div>
+
+<style>
+  .star {
+    color: gold;
+    font-size: 18px;
+  }
+</style>
+
+<script>
+  function setRatingAndReviews() {
+    // Use URL path as a unique product identifier
+    const path = window.location.pathname;
+    const storageKey = 'ratingData_' + path;
+
+    let stored = localStorage.getItem(storageKey);
+    let rating, reviewCount;
+
+    if (stored) {
+      ({ rating, reviewCount } = JSON.parse(stored));
+    } else {
+      rating = (Math.random() * 0.4 + 4.6).toFixed(1); // 4.6 - 5.0
+      reviewCount = Math.floor(Math.random() * 901) + 100; // 100 - 1000
+      localStorage.setItem(storageKey, JSON.stringify({ rating, reviewCount }));
+    }
+
+    document.getElementById('rating-value').textContent = rating + ' ★';
+
+    const starsEl = document.getElementById('rating-stars');
+    starsEl.innerHTML = '';
+
+    const fullStars = Math.floor(rating);
+    const halfStar = rating % 1 >= 0.5;
+
+    for (let i = 0; i < fullStars; i++) {
+      starsEl.innerHTML += '<span class="star">★</span>';
+    }
+
+    if (halfStar) {
+      starsEl.innerHTML += '<span class="star">★</span>';
+    }
+
+    for (let i = fullStars + (halfStar ? 1 : 0); i < 5; i++) {
+      starsEl.innerHTML += '<span class="star" style="color: lightgray;">★</span>';
+    }
+
+    document.getElementById('review-count').textContent = reviewCount;
+
+    // Optional: Update review count every 15 minutes
+    setInterval(() => {
+      reviewCount++;
+      document.getElementById('review-count').textContent = reviewCount;
+      localStorage.setItem(storageKey, JSON.stringify({ rating, reviewCount }));
+    }, 900000); // 15 mins
+  }
+
+  document.addEventListener('DOMContentLoaded', setRatingAndReviews);
+</script>
