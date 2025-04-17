@@ -1,0 +1,6 @@
+{%- if show_badges and compare_at_price > price -%}
+  {% assign discount_percentage = compare_at_price | minus: price | times: 100 | divided_by: compare_at_price | round %}
+  <span class="badge price__badge-sale color-{{ settings.sale_badge_color_scheme }}">
+    {{ 'products.product.on_sale' | t }} - {{ discount_percentage }}% Off
+  </span>
+{%- endif -%}
