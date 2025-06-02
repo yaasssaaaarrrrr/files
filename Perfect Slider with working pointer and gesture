@@ -1,0 +1,148 @@
+<style>
+  .custom-carousel {
+    position: relative;
+    width: 100%;
+    height: 170px;
+    overflow: hidden;
+    background: #fece06;
+    border-radius: 12px;
+  }
+
+  .custom-slides {
+    display: flex;
+    height: 100%;
+    transition: transform 0.5s ease-in-out;
+  }
+
+  .custom-slide {
+    flex: 1 0 100%;
+    height: 100%;
+    padding: 80px 20px;
+    box-sizing: border-box;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .custom-slide h2 {
+    color: #010101;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .custom-slide p {
+    color: #404042 !important;
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .custom-nav-dots {
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  .custom-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin: 5px;
+    border-radius: 50%;
+    background: #ccc;
+    cursor: pointer;
+  }
+
+  .custom-dot.active {
+    background: #010101;
+  }
+</style>
+
+<div class="custom-carousel">
+  <div class="custom-slides" id="customSlides">
+    <div class="custom-slide">
+      <h2>Unlock a World of Paw-some Perks!</h2>
+      <p>Enjoy exclusive discounts on Food, Grooming, Doctors/Check-ups, Insurance, and more from top brands.</p>
+    </div>
+    <div class="custom-slide">
+      <h2>Your Pet’s World Wrapped in One Membership</h2>
+      <p>From food to fun, get it all with Petopia.</p>
+    </div>
+    <div class="custom-slide">
+      <h2>Happy Pet, Happy You!</h2>
+      <p>Invest in your pet’s well-being and your peace of mind.</p>
+    </div>
+    <div class="custom-slide">
+      <h2>Maximize Value for Your Pet!</h2>
+      <p>Get benefits worth far more than the membership cost.</p>
+    </div>
+  </div>
+</div>
+
+<div class="custom-nav-dots">
+  <span class="custom-dot active" onclick="goToSlide(0)"></span>
+  <span class="custom-dot" onclick="goToSlide(1)"></span>
+  <span class="custom-dot" onclick="goToSlide(2)"></span>
+  <span class="custom-dot" onclick="goToSlide(3)"></span>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    let currentSlide = 0;
+    const slides = document.getElementById("customSlides");
+    const dots = document.querySelectorAll(".custom-dot");
+    const totalSlides = dots.length;
+    let autoSlideInterval;
+
+    function goToSlide(n) {
+      currentSlide = n;
+      slides.style.transform = `translateX(-${n * 100}%)`;
+      dots.forEach(dot => dot.classList.remove("active"));
+      if (dots[n]) dots[n].classList.add("active");
+    }
+
+    // Click dots
+    dots.forEach((dot, index) => {
+      dot.addEventListener("click", () => {
+        resetAutoSlide();
+        goToSlide(index);
+      });
+    });
+
+    // Auto slide
+    function startAutoSlide() {
+      autoSlideInterval = setInterval(() => {
+        currentSlide = (currentSlide + 1) % totalSlides;
+        goToSlide(currentSlide);
+      }, 5000);
+    }
+
+    function resetAutoSlide() {
+      clearInterval(autoSlideInterval);
+      startAutoSlide();
+    }
+
+    startAutoSlide();
+
+    // Swipe gestures
+    let startX = 0;
+    slides.addEventListener("touchstart", (e) => {
+      startX = e.touches[0].clientX;
+    });
+
+    slides.addEventListener("touchend", (e) => {
+      let endX = e.changedTouches[0].clientX;
+      let diff = endX - startX;
+
+      if (Math.abs(diff) > 50) {
+        if (diff < 0 && currentSlide < totalSlides - 1) {
+          goToSlide(currentSlide + 1);
+          resetAutoSlide();
+        } else if (diff > 0 && currentSlide > 0) {
+          goToSlide(currentSlide - 1);
+          resetAutoSlide();
+        }
+      }
+    });
+  });
+</script>
