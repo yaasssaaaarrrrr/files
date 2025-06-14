@@ -1,0 +1,195 @@
+<!-- sections/media-video-carousel.liquid -->
+
+<div class="media-carousel-main">
+  <div class="media-carousel">
+    <div class="carousel-track">
+      {% for block in section.blocks %}
+        {% if block.settings.video_url %}
+          <div class="carousel-slide">
+            <video 
+              src="{{ block.settings.video_url }}" 
+              autoplay 
+              muted 
+              loop 
+              playsinline 
+              controls 
+              style="max-width: 95%; border-radius: 12px;">
+            </video>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <div class="carousel-dots">
+      {% for block in section.blocks %}
+        <span class="dot {% if forloop.first %}active{% endif %}"></span>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<style>
+  .media-carousel-main {
+    background-color: #5072b8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .media-carousel {
+    position: relative;
+    width: 95%;
+    overflow: hidden;
+    background-color: #374da1;
+    padding: 20px 0;
+    margin: 10px;
+    border-radius: 30px;
+  }
+
+  .carousel-track {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+    touch-action: pan-y;
+  }
+
+  .carousel-slide {
+    flex: 0 0 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+  }
+
+  .carousel-slide video {
+    max-width: 95%;
+    height: auto;
+    border-radius: 12px;
+  }
+
+  .carousel-dots {
+    text-align: center;
+    margin-top: 15px;
+  }
+
+  .carousel-dots .dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin: 0 6px;
+    border-radius: 50%;
+    background: #ccc;
+    cursor: pointer;
+  }
+
+  .carousel-dots .dot.active {
+    background: #333;
+  }
+
+  @media screen and (min-width: 768px) {
+    .carousel-slide {
+      flex: 0 0 25%;
+    }
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const carousels = document.querySelectorAll('.media-carousel');
+
+  carousels.forEach(carousel => {
+    const track = carousel.querySelector('.carousel-track');
+    const dots = carousel.querySelectorAll('.carousel-dots .dot');
+    const slides = carousel.querySelectorAll('.carousel-slide');
+    const totalSlides = slides.length;
+    let currentIndex = 0;
+    let interval;
+
+    function getSlidesPerView() {
+      return window.innerWidth >= 768 ? 4 : 1;
+    }
+
+    function goToSlide(index) {
+      const slidesPerView = getSlidesPerView();
+      const maxIndex = totalSlides - slidesPerView;
+      if (index < 0) index = 0;
+      if (index > maxIndex) index = maxIndex;
+
+      currentIndex = index;
+
+      const translateXPercent = (100 / slidesPerView) * currentIndex;
+      track.style.transform = `translateX(-${translateXPercent}%)`;
+
+      dots.forEach(dot => dot.classList.remove('active'));
+      if (dots[currentIndex]) dots[currentIndex].classList.add('active');
+    }
+
+    function autoPlay() {
+      interval = setInterval(() => {
+        const slidesPerView = getSlidesPerView();
+        const maxIndex = totalSlides - slidesPerView;
+        let nextIndex = currentIndex + 1;
+        if (nextIndex > maxIndex) nextIndex = 0;
+        goToSlide(nextIndex);
+      }, 3000);
+    }
+
+    dots.forEach((dot, index) => {
+      dot.addEventListener('click', () => {
+        goToSlide(index);
+        clearInterval(interval);
+        autoPlay();
+      });
+    });
+
+    let startX = 0;
+    track.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+    });
+    track.addEventListener('touchend', (e) => {
+      const endX = e.changedTouches[0].clientX;
+      const diffX = endX - startX;
+      if (Math.abs(diffX) > 50) {
+        const slidesPerView = getSlidesPerView();
+        const maxIndex = totalSlides - slidesPerView;
+        if (diffX < 0 && currentIndex < maxIndex) goToSlide(currentIndex + 1);
+        else if (diffX > 0 && currentIndex > 0) goToSlide(currentIndex - 1);
+        clearInterval(interval);
+        autoPlay();
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      goToSlide(0);
+    });
+
+    goToSlide(0);
+    autoPlay();
+  });
+});
+</script>
+
+{% schema %}
+{
+  "name": "Media Video Carousel",
+  "settings": [],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Video Slide",
+      "settings": [
+        {
+          "type": "url",
+          "id": "video_url",
+          "label": "Video URL (from Files or external)"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 10,
+  "presets": [
+    {
+      "name": "Media Video Carousel",
+      "category": "Video"
+    }
+  ]
+}
+{% endschema %}
