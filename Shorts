@@ -1,0 +1,98 @@
+<!-- sections/media-video-shorts-carousel.liquid -->
+
+<div class="shorts-carousel">
+  <div class="shorts-track">
+    {% for block in section.blocks %}
+      {% assign url = block.settings.video_url %}
+      {% if url contains "youtube.com" or url contains "youtu.be" %}
+        {% assign id = url 
+          | split: 'shorts/' | last 
+          | split: 'watch?v=' | last 
+          | split: '/' | last 
+          | split: '&' | first 
+          | split: '?' | first %}
+        <iframe 
+          src="https://www.youtube.com/embed/{{ id }}?autoplay=1&mute=1&loop=1&playlist={{ id }}&controls=0&modestbranding=1&rel=0" 
+          frameborder="0" 
+          allow="autoplay; encrypted-media; picture-in-picture" 
+          allowfullscreen 
+          class="shorts-video">
+        </iframe>
+      {% else %}
+        <video 
+          src="{{ url }}" 
+          autoplay 
+          muted 
+          loop 
+          playsinline 
+          controls 
+          class="shorts-video">
+        </video>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+<style>
+  /* For Webkit (Chrome, Safari, Edge) */
+.shorts-carousel::-webkit-scrollbar {
+  display: none;
+}
+.shorts-carousel {
+  overflow-x: auto;
+  display: flex;
+  scroll-snap-type: x mandatory;
+  gap: 16px;
+  padding: 20px;
+ background: #374DA2;
+  background-image: url('https://cdn.shopify.com/s/files/1/0672/9800/1090/files/Rectangle_16_2_1.png?v=1750532019');
+  background-size: auto;
+  background-position: center;
+  background-repeat: repeat;
+}
+.shorts-track {
+  display: flex;
+  gap:10px;
+}
+.shorts-video {
+  scroll-snap-align: center;
+  width: 260px;
+  height: 460px;
+  border-radius: 12px;
+  background: #000;
+  
+}
+@media (max-width: 768px) {
+  .shorts-video {
+    width: 220px;
+    height: 390px;
+  }
+}
+</style>
+
+{% schema %}
+{
+  "name": "Video Shorts Carousel",
+  "settings": [],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Video Slide",
+      "settings": [
+        {
+          "type": "url",
+          "id": "video_url",
+          "label": "Video URL (YouTube Shorts or MP4 from Files)"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 10,
+  "presets": [
+    {
+      "name": "Shorts Carousel",
+      "category": "Video"
+    }
+  ]
+}
+{% endschema %}
