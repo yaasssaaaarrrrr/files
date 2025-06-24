@@ -1,58 +1,69 @@
 <!-- sections/media-video-shorts-carousel.liquid -->
 
-<div class="shorts-carousel">
-  <div class="shorts-track">
-    {% for block in section.blocks %}
-      {% assign url = block.settings.video_url %}
-      {% if url contains "youtube.com" or url contains "youtu.be" %}
-        {% assign id = url 
-          | split: 'shorts/' | last 
-          | split: 'watch?v=' | last 
-          | split: '/' | last 
-          | split: '&' | first 
-          | split: '?' | first %}
-        <iframe 
-          src="https://www.youtube.com/embed/{{ id }}?autoplay=1&mute=1&loop=1&playlist={{ id }}&controls=0&modestbranding=1&rel=0" 
-          frameborder="0" 
-          allow="autoplay; encrypted-media; picture-in-picture" 
-          allowfullscreen 
-          class="shorts-video">
-        </iframe>
-      {% else %}
-        <video 
-          src="{{ url }}" 
-          autoplay 
-          muted 
-          loop 
-          playsinline 
-          controls 
-          class="shorts-video">
-        </video>
-      {% endif %}
-    {% endfor %}
+<div class="shorts-carousel-wrapper">
+  <button class="shorts-arrow left-arrow" aria-label="Previous">&#10094;</button>
+  <div class="shorts-carousel" id="shortsCarousel">
+    <div class="shorts-track">
+      {% for block in section.blocks %}
+        {% assign url = block.settings.video_url %}
+        {% if url contains "youtube.com" or url contains "youtu.be" %}
+          {% assign id = url 
+            | split: 'shorts/' | last 
+            | split: 'watch?v=' | last 
+            | split: '/' | last 
+            | split: '&' | first 
+            | split: '?' | first %}
+          <iframe 
+            src="https://www.youtube.com/embed/{{ id }}?autoplay=1&mute=1&loop=1&playlist={{ id }}&controls=0&modestbranding=1&rel=0" 
+            frameborder="0" 
+            allow="autoplay; encrypted-media; picture-in-picture" 
+            allowfullscreen 
+            class="shorts-video">
+          </iframe>
+        {% else %}
+          <video 
+            src="{{ url }}" 
+            autoplay 
+            muted 
+            loop 
+            playsinline 
+            controls 
+            class="shorts-video">
+          </video>
+        {% endif %}
+      {% endfor %}
+    </div>
   </div>
+  <button class="shorts-arrow right-arrow" aria-label="Next">&#10095;</button>
 </div>
 
 <style>
-  /* For Webkit (Chrome, Safari, Edge) */
+    /* For Webkit (Chrome, Safari, Edge) */
 .shorts-carousel::-webkit-scrollbar {
   display: none;
 }
-.shorts-carousel {
-  overflow-x: auto;
+.shorts-carousel-wrapper {
+  position: relative;
   display: flex;
-  scroll-snap-type: x mandatory;
-  gap: 16px;
-  padding: 20px;
- background: #374DA2;
+  align-items: center;
+  justify-content: center;
+  background: #374DA2;
   background-image: url('https://cdn.shopify.com/s/files/1/0672/9800/1090/files/Rectangle_16_2_1.png?v=1750532019');
   background-size: auto;
   background-position: center;
   background-repeat: repeat;
+  padding: 20px;
+  overflow: hidden;
+}
+.shorts-carousel {
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
 }
 .shorts-track {
   display: flex;
-  gap:10px;
+  gap: 16px;
 }
 .shorts-video {
   scroll-snap-align: center;
@@ -60,15 +71,52 @@
   height: 460px;
   border-radius: 12px;
   background: #000;
-  
+}
+.shorts-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #f5212d;
+  font-size: 24px;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 10;
+}
+.left-arrow {
+  left: 10px;
+}
+.right-arrow {
+  right: 10px;
 }
 @media (max-width: 768px) {
   .shorts-video {
     width: 220px;
     height: 390px;
   }
+  .shorts-arrow {
+    display: none;
+  }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const carousel = document.getElementById('shortsCarousel');
+  const leftArrow = document.querySelector('.left-arrow');
+  const rightArrow = document.querySelector('.right-arrow');
+
+  leftArrow.addEventListener('click', () => {
+    carousel.scrollBy({ left: -280, behavior: 'smooth' });
+  });
+
+  rightArrow.addEventListener('click', () => {
+    carousel.scrollBy({ left: 280, behavior: 'smooth' });
+  });
+});
+</script>
 
 {% schema %}
 {
