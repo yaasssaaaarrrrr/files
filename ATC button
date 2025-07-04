@@ -1,0 +1,148 @@
+
+                          <div class="sticky-buy-bar">
+  <div class="sticky-buy-price">
+    <div class="price-section">
+      <div class="current-price-y">{{ product.price | money }}</div>
+     
+        <div class="dis-comp-price-y">
+           {% if product.compare_at_price > product.price %}
+        <span class="discount-tag-y">
+          {{ 100 | minus: product.price | times: 100 | divided_by: product.compare_at_price }}% Off
+        </span>
+        <span class="original-price-y">{{ product.compare_at_price | money }}</span>
+           {% endif %}
+          <div>
+     
+    </div>
+  </div>
+  <form method="post" action="/cart/add">
+    <input type="hidden" name="id" value="{{ product.variants.first.id }}">
+    <button type="submit" class="sticky-buy-btn">Add to cart</button>
+  </form>
+</div>
+
+            <style>
+                
+            .dis-comp-price-y{
+              display: flex;
+              flex-direction: column;
+            
+            }
+              .sticky-buy-bar {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  background: #1D1D1F;
+  border-radius: 999px;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+
+    flex-direction: row;
+  width: calc(100% - 40px);
+  max-width: 500px;
+  z-index: 9999;
+  box-shadow: 0 0px 24px 0px #00000059;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.sticky-buy-bar.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sticky-buy-price {
+  display: flex;
+  flex-direction: column;
+align-items: center;
+  color: white;
+  width:100%;
+}
+
+.price-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+    justify-content: space-between;
+}
+
+.current-price-y {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.discount-tag-y {
+  background: #F7552E;
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.original-price-y {
+  text-decoration: line-through;
+  color: #ccc;
+  font-size: 12px;
+}
+
+.sticky-buy-btn {
+  background-color: #4BAE4F;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  min-width: 120px;
+  transition: background 0.3s ease;
+}
+
+.sticky-buy-btn:hover {
+  background-color: #2e8a36;
+}
+              
+
+@media (max-width: 768px) {
+  .sticky-buy-bar {
+    bottom: 10px;
+    flex-direction: row;
+    padding: 15px 15px;
+  }
+  .sticky-buy-btn {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+  .current-price-y {
+    font-size: 18px;
+  }
+ 
+}
+
+            </style>
+
+        <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const stickyBar = document.querySelector('.sticky-buy-bar');
+
+    function toggleStickyBar() {
+      if (window.scrollY > 400) {
+        stickyBar.classList.add('visible');
+      } else {
+        stickyBar.classList.remove('visible');
+      }
+    }
+
+    window.addEventListener('scroll', toggleStickyBar);
+    toggleStickyBar(); // Run on load
+  });
+</script>
+
