@@ -1,0 +1,303 @@
+<div class="reel-carousel-wrapper">
+  <button class="reel-arrow reel-left" aria-label="Previous">&#10094;</button>
+  <div class="reel-carousel" id="reelCarousel">
+    <div class="reel-track">
+      {% for block in section.blocks %}
+        {% assign url = block.settings.video_url %}
+        <div class="reel-item">
+          {% if url contains "youtube.com" or url contains "youtu.be" %}
+            {% assign id = url 
+              | split: 'shorts/' | last 
+              | split: 'watch?v=' | last 
+              | split: '/' | last 
+              | split: '&' | first 
+              | split: '?' | first %}
+            <div class="reel-iframe-container">
+              <iframe 
+                src="https://www.youtube.com/embed/{{ id }}?autoplay=0&mute=1&loop=1&playlist={{ id }}&controls=0&modestbranding=1&rel=0&enablejsapi=1" 
+                frameborder="0" 
+                allow="autoplay; encrypted-media; picture-in-picture" 
+                allowfullscreen 
+                class="reel-video" loading="lazy">
+              </iframe>
+              <div class="unmute-button" onclick="unmuteVideo(this)">🔊 Unmute</div>
+              <div class="mute-button" onclick="muteVideo(this)">🔇 Mute</div>
+            </div>
+          {% else %}
+            <div class="reel-video-container">
+              <video 
+                src="{{ url }}" 
+                muted 
+                loop 
+                playsinline 
+                controls 
+                class="reel-video">
+              </video>
+              <div class="unmute-button" onclick="unmuteVideo(this)">🔊 Unmute</div>
+              <div class="mute-button" onclick="muteVideo(this)">🔇 Mute</div>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  <button class="reel-arrow reel-right" aria-label="Next">&#10095;</button>
+</div>
+
+<style>
+.reel-carousel-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F9EFD4;
+  background-image: url('https://cdn.shopify.com/s/files/1/0672/9800/1090/files/Rectangle_16_2_1.png?v=1750532019');
+  background-size: auto;
+  background-position: center;
+  background-repeat: repeat;
+  padding: 40px 20px;
+  overflow: hidden;
+}
+
+.reel-carousel {
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+}
+
+.reel-track {
+  display: flex;
+  gap: 16px;
+}
+
+.reel-item {
+  position: relative;
+}
+
+.reel-video {
+  scroll-snap-align: center;
+  width: 260px;
+  height: 460px;
+  border-radius: 12px;
+  background: #000;
+}
+
+.unmute-button, .mute-button {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.mute-button {
+  display: none;
+}
+
+.reel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #f5212d;
+  font-size: 24px;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.reel-left { left: 10px; }
+.reel-right { right: 10px; }
+
+@media (max-width: 768px) {
+  .reel-video {
+    width: 220px;
+    height: 390px;
+  }
+  .reel-arrow {
+    display: none;
+  }
+}
+</style>
+
+<!-- Load YouTube Iframe API -->
+<script src="https://www.youtube.com/iframe_api"></script>
+
+<script>
+let ytPlayers = [];
+let playerIndex = 0;
+
+function initYouTubePlayers() {
+  const iframes = document.querySelectorAll('.reel-item iframe:not([data-initialized])');
+
+  iframes.forEach((iframe) => {
+    const uniqueId = 'yt-player-' + playerIndex++;
+    iframe.setAttribute('id', uniqueId);
+    iframe.setAttribute('data-initialized', 'true');
+
+    const player = new YT.Player(iframe, {
+      events: {
+        onReady: (event) => {
+          ytPlayers.push(event.target);
+
+          // Autoplay first video in its section when visible
+          const section = iframe.closest('.reel-carousel');
+          if (section) {
+            const firstItem = section.querySelector('.reel-item');
+            if (firstItem && firstItem.contains(iframe)) {
+              const observer = new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                  if (entry.isIntersecting) {
+                    event.target.playVideo();
+                    obs.disconnect();
+                  }
+                });
+              }, { threshold: 0.2 });
+              observer.observe(section);
+            }
+          }
+        }
+      }
+    });
+  });
+}
+
+function onYouTubeIframeAPIReady() {
+  initYouTubePlayers();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  const allCarousels = document.querySelectorAll('.reel-carousel');
+
+  allCarousels.forEach(carousel => {
+    const leftArrow = carousel.closest('.reel-carousel-wrapper').querySelector('.reel-left');
+    const rightArrow = carousel.closest('.reel-carousel-wrapper').querySelector('.reel-right');
+
+    if (leftArrow && rightArrow) {
+      leftArrow.addEventListener('click', () => {
+        carousel.scrollBy({ left: -280, behavior: 'smooth' });
+      });
+
+      rightArrow.addEventListener('click', () => {
+        carousel.scrollBy({ left: 280, behavior: 'smooth' });
+      });
+    }
+
+    // Observer to autoplay/pause videos on scroll
+    const videoObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const wrapper = entry.target;
+        const iframe = wrapper.querySelector('iframe');
+        const video = wrapper.querySelector('video');
+
+        if (entry.isIntersecting) {
+          if (iframe && iframe.id && YT.get(iframe.id)) {
+            YT.get(iframe.id).playVideo();
+          }
+          if (video) {
+            video.play().catch(() => {});
+          }
+        } else {
+          if (iframe && iframe.id && YT.get(iframe.id)) {
+            YT.get(iframe.id).pauseVideo();
+          }
+          if (video) {
+            video.pause();
+          }
+        }
+      });
+    }, {
+      root: carousel,
+      threshold: 0.75
+    });
+
+    carousel.querySelectorAll('.reel-item').forEach(item => videoObserver.observe(item));
+  });
+
+  // Try initializing again in case API already loaded
+  if (window.YT && YT.Player) {
+    initYouTubePlayers();
+  }
+});
+
+function unmuteVideo(button) {
+  const wrapper = button.closest('.reel-item');
+  const iframe = wrapper.querySelector('iframe');
+  const video = wrapper.querySelector('video');
+  const muteBtn = wrapper.querySelector('.mute-button');
+
+  if (iframe && iframe.id && YT.get(iframe.id)) {
+    YT.get(iframe.id).unMute();
+  }
+
+  if (video) {
+    video.muted = false;
+    video.volume = 1;
+  }
+
+  button.style.display = 'none';
+
+  setTimeout(() => {
+    if (muteBtn) {
+      muteBtn.style.display = 'block';
+    }
+  }, 3000);
+}
+
+function muteVideo(button) {
+  const wrapper = button.closest('.reel-item');
+  const iframe = wrapper.querySelector('iframe');
+  const video = wrapper.querySelector('video');
+  const unmuteBtn = wrapper.querySelector('.unmute-button');
+
+  if (iframe && iframe.id && YT.get(iframe.id)) {
+    YT.get(iframe.id).mute();
+  }
+
+  if (video) {
+    video.muted = true;
+  }
+
+  button.style.display = 'none';
+  if (unmuteBtn) {
+    unmuteBtn.style.display = 'block';
+  }
+}
+</script>
+
+
+
+
+{% schema %}
+{
+  "name": "Video Reels Carousel",
+  "settings": [],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Video Slide",
+      "settings": [
+        {
+          "type": "url",
+          "id": "video_url",
+          "label": "Video URL (YouTube Shorts or MP4 from Files)"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 10,
+  "presets": [
+    {
+      "name": "Reels Carousel",
+      "category": "Video"
+    }
+  ]
+}
+{% endschema %}
