@@ -1,0 +1,68 @@
+{% assign recommendations = product.metafields.custom.product_rec.value %}
+
+{% if recommendations != blank %}
+  <div class="recommended-products">
+    <h3>Wear It With</h3>
+    <div class="recommended-products-grid">
+      {% for recommended_product in recommendations %}
+        {% assign p = all_products[recommended_product.handle] %}
+        {% if p %}
+          <div class="recommended-product-card">
+            <a href="{{ p.url }}">
+              {% if p.featured_image %}
+                <img src="{{ p.featured_image | img_url: '400x' }}" alt="{{ p.title }}" />
+              {% endif %}
+              <p class="recommended-product-title">{{ p.title }}</p>
+
+              <p class="recommended-product-price">
+                {% if p.compare_at_price > p.price %}
+                  <span class="sale-price">{{ p.price | money }}</span>
+                  <span class="compare-price">{{ p.compare_at_price | money }}</span>
+                {% else %}
+                  <span>{{ p.price | money }}</span>
+                {% endif %}
+              </p>
+            </a>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+<style>
+.recommended-products {
+  margin-top: 40px;
+}
+.recommended-products-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.recommended-product-card {
+  width: 160px;
+  text-align: center;
+}
+.recommended-product-card img {
+  width: 100%;
+ margin-bottom: 10px;
+  border-radius: 8px;
+}
+.recommended-product-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+.recommended-product-price {
+
+  font-size: 14px;
+}
+.sale-price {
+  color: #1e4496;
+  font-weight: 600;
+  margin-right: 6px;
+}
+.compare-price {
+  text-decoration: line-through;
+  color: #999;
+  font-size: 13px;
+}
+</style>
