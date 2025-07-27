@@ -1,0 +1,153 @@
+{% assign videos = product.metafields.custom.testimonial_videos.value %}
+{% if videos and videos.size > 0 %}
+  <div class="shorts-carousel-wrapper">
+    <button class="shorts-arrow left-arrow" aria-label="Previous">&#10094;</button>
+    <div class="shorts-carousel" id="shortsCarousel">
+      <div class="shorts-track">
+        {% for url in videos %}
+          <div class="shorts-item">
+            {% if url contains "youtube.com" or url contains "youtu.be" %}
+              {% assign id = url 
+                | split: 'shorts/' | last 
+                | split: 'watch?v=' | last 
+                | split: '/' | last 
+                | split: '&' | first 
+                | split: '?' | first %}
+              <iframe 
+                src="https://www.youtube.com/embed/{{ id }}?autoplay=1&mute=1&loop=1&playlist={{ id }}&controls=0&modestbranding=1&rel=0&enablejsapi=1" 
+                frameborder="0" 
+                allow="autoplay; encrypted-media; picture-in-picture" 
+                allowfullscreen 
+                class="shorts-video">
+              </iframe>
+            {% else %}
+              <video 
+                src="{{ url }}" 
+                autoplay 
+                muted 
+                loop 
+                playsinline 
+                controls 
+                class="shorts-video">
+              </video>
+            {% endif %}
+            <div class="unmute-button" data-muted="true" onclick="toggleMute(this)">🔊 Unmute</div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    <button class="shorts-arrow right-arrow" aria-label="Next">&#10095;</button>
+  </div>
+
+  <style>
+    .shorts-carousel-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .shorts-carousel {
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      width: 100%;
+    }
+
+    .shorts-track {
+      display: flex;
+      gap: 16px;
+    }
+
+    .shorts-item {
+      position: relative;
+    }
+
+    .shorts-video {
+      scroll-snap-align: center;
+      width: 200px;
+      height: 360px;
+      border-radius: 12px;
+      background: #000;
+      border: 1px solid #E0E0E0;
+    }
+
+    .shorts-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: #F4C166;
+      font-size: 24px;
+      padding: 10px;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    .left-arrow { left: 10px; }
+    .right-arrow { right: 10px; }
+
+    .unmute-button {
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .shorts-video {
+        width: 160px;
+        height: 280px;
+      }
+
+      .shorts-arrow {
+        display: none;
+      }
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const carousel = document.getElementById('shortsCarousel');
+      const leftArrow = document.querySelector('.left-arrow');
+      const rightArrow = document.querySelector('.right-arrow');
+
+      leftArrow.addEventListener('click', () => {
+        carousel.scrollBy({ left: -280, behavior: 'smooth' });
+      });
+
+      rightArrow.addEventListener('click', () => {
+        carousel.scrollBy({ left: 280, behavior: 'smooth' });
+      });
+    });
+
+    function toggleMute(button) {
+      const wrapper = button.closest('.shorts-item');
+      const iframe = wrapper.querySelector('iframe');
+      const video = wrapper.querySelector('video');
+
+      const isMuted = button.dataset.muted === "true";
+
+      if (iframe) {
+        const command = isMuted ? "unMute" : "mute";
+        iframe.contentWindow.postMessage(`{"event":"command","func":"${command}","args":""}`, '*');
+      }
+
+      if (video) {
+        video.muted = !video.muted;
+        video.volume = isMuted ? 1 : 0;
+      }
+
+      button.dataset.muted = (!isMuted).toString();
+      button.innerHTML = isMuted ? "🔇 Mute" : "🔊 Unmute";
+    }
+  </script>
+{% endif %}
