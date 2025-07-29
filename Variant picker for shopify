@@ -1,0 +1,831 @@
+{% doc %}
+  @prompt
+    create Variant Picker and in color show the color with color name and default select first option, make more attractive, make good design, remove green icon tick
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-variant-picker-{{ ai_gen_id }} {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: {{ block.settings.padding }}px;
+    background: {{ block.settings.background_color }};
+    border-radius: {{ block.settings.border_radius }}px;
+    box-shadow: {{ block.settings.shadow_style }};
+    border: 1px solid {{ block.settings.border_color }};
+  }
+
+  .ai-variant-option-group-{{ ai_gen_id }} {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .ai-variant-option-label-{{ ai_gen_id }} {
+    font-size: {{ block.settings.label_font_size }}px;
+    font-weight: {{ block.settings.label_font_weight }};
+    color: {{ block.settings.label_color }};
+    margin: 0;
+    letter-spacing: 0.5px;
+    text-transform: {{ block.settings.label_text_transform }};
+  }
+
+  .ai-variant-selected-value-{{ ai_gen_id }} {
+    color: {{ block.settings.selected_value_color }};
+    font-weight: 500;
+    margin-left: 8px;
+  }
+
+  .ai-variant-options-{{ ai_gen_id }} {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .ai-variant-option-{{ ai_gen_id }} {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .ai-variant-option-input-{{ ai_gen_id }} {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;}
+
+  .ai-variant-option-button-{{ ai_gen_id }} {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: {{ block.settings.option_padding_y }}px {{ block.settings.option_padding_x }}px;
+    border: {{ block.settings.border_width }}px solid {{ block.settings.option_border_color }};
+    border-radius: {{ block.settings.option_border_radius }}px;
+    background: {{ block.settings.option_background }};
+    color: {{ block.settings.option_text_color }};
+    font-size: {{ block.settings.option_font_size }}px;
+    font-weight: {{ block.settings.option_font_weight }};
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 48px;
+    position: relative;
+    overflow: hidden;
+    text-transform: {{ block.settings.option_text_transform }};
+    letter-spacing: 0.3px;
+  }
+
+  .ai-variant-option-button-{{ ai_gen_id }}::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .ai-variant-option-button-{{ ai_gen_id }}:hover {
+    border-color: {{ block.settings.hover_border_color }};
+    background: {{ block.settings.hover_background }};
+    color: {{ block.settings.hover_text_color }};
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .ai-variant-option-button-{{ ai_gen_id }}:hover::before {
+    opacity: 1;
+  }
+
+  .ai-variant-option-input-{{ ai_gen_id }}:checked + .ai-variant-option-button-{{ ai_gen_id }} {
+    border-color: {{ block.settings.selected_border_color }};
+    background: {{ block.settings.selected_background }};
+    color: {{ block.settings.selected_text_color }};
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    position: relative;
+  }
+
+  .ai-variant-option-input-{{ ai_gen_id }}:focus + .ai-variant-option-button-{{ ai_gen_id }} {
+    outline: 3px solid {{ block.settings.focus_color }};
+    outline-offset: 2px;
+  }
+
+  .ai-color-swatch-{{ ai_gen_id }} {
+    width: {{ block.settings.color_swatch_size }}px;
+    height: {{ block.settings.color_swatch_size }}px;
+    border-radius: {{ block.settings.color_swatch_border_radius }}px;
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.15);
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ai-color-swatch-{{ ai_gen_id }}::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 100%);
+  }
+
+  .ai-variant-option-text-{{ ai_gen_id }} {
+    white-space: nowrap;
+    position: relative;
+    z-index: 1;
+  }
+
+  .ai-variant-unavailable-{{ ai_gen_id }} {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .ai-variant-unavailable-{{ ai_gen_id }} .ai-variant-option-button-{{ ai_gen_id }} {
+    cursor: not-allowed;
+    position: relative;
+    background: {{ block.settings.unavailable_background }};
+    color: {{ block.settings.unavailable_text_color }};
+  }
+
+  .ai-variant-unavailable-{{ ai_gen_id }} .ai-variant-option-button-{{ ai_gen_id }}:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .ai-variant-unavailable-{{ ai_gen_id }} .ai-variant-option-button-{{ ai_gen_id }}::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 8px;
+    right: 8px;
+    height: 2px;
+    background: {{ block.settings.unavailable_text_color }};
+    transform: translateY(-50%) rotate(-15deg);
+    border-radius: 1px;
+  }
+
+  .ai-size-option-{{ ai_gen_id }} .ai-variant-option-button-{{ ai_gen_id }} {
+    min-width: 60px;
+    justify-content: center;
+    font-weight: 600;
+  }
+
+  .ai-color-option-{{ ai_gen_id }} .ai-variant-option-button-{{ ai_gen_id }} {
+    padding-left: {{ block.settings.option_padding_x | minus: 4 }}px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-variant-picker-{{ ai_gen_id }} {
+      gap: 20px;
+      padding: {{ block.settings.padding | times: 0.8 }}px;
+    }
+    
+    .ai-variant-options-{{ ai_gen_id }} {
+      gap: 10px;
+    }
+
+    .ai-variant-option-button-{{ ai_gen_id }} {
+      min-height: 44px;
+      font-size: {{ block.settings.option_font_size | minus: 1 }}px;
+    }
+
+    .ai-color-swatch-{{ ai_gen_id }} {
+      width: {{ block.settings.color_swatch_size | times: 0.9 }}px;
+      height: {{ block.settings.color_swatch_size | times: 0.9 }}px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ai-variant-option-button-{{ ai_gen_id }} {
+      transition: none;
+    }
+    
+    .ai-variant-option-button-{{ ai_gen_id }}:hover {
+      transform: none;
+    }
+  }
+{% endstyle %}
+
+<variant-picker-{{ ai_gen_id }}
+  class="ai-variant-picker-{{ ai_gen_id }}"
+  data-product-id="{{ product.id }}"
+  {{ block.shopify_attributes }}
+>
+  {% if product.variants.size > 1 %}
+    {% for option in product.options_with_values %}
+      <div class="ai-variant-option-group-{{ ai_gen_id }}">
+        <h3 class="ai-variant-option-label-{{ ai_gen_id }}">
+          {{ option.name }}
+          {% if option.selected_value %}
+            <span class="ai-variant-selected-value-{{ ai_gen_id }}">{{ option.selected_value }}</span>
+          {% endif %}
+        </h3>
+        <div class="ai-variant-options-{{ ai_gen_id }}">
+          {% for value in option.values %}
+            {% assign option_position = option.position %}
+            {% assign is_available = false %}
+            {% assign variant_for_value = null %}
+            
+            {% for variant in product.variants %}
+              {% case option_position %}
+                {% when 1 %}
+                  {% if variant.option1 == value %}
+                    {% assign variant_for_value = variant %}
+                    {% if variant.available %}
+                      {% assign is_available = true %}
+                    {% endif %}
+                    {% break %}
+                  {% endif %}
+                {% when 2 %}
+                  {% if variant.option2 == value %}
+                    {% assign variant_for_value = variant %}
+                    {% if variant.available %}
+                      {% assign is_available = true %}
+                    {% endif %}
+                    {% break %}
+                  {% endif %}
+                {% when 3 %}
+                  {% if variant.option3 == value %}
+                    {% assign variant_for_value = variant %}
+                    {% if variant.available %}
+                      {% assign is_available = true %}
+                    {% endif %}
+                    {% break %}
+                  {% endif %}
+              {% endcase %}
+            {% endfor %}
+
+            {% assign is_selected = false %}
+            {% if product.selected_variant %}
+              {% case option_position %}
+                {% when 1 %}
+                  {% if product.selected_variant.option1 == value %}
+                    {% assign is_selected = true %}
+                  {% endif %}
+                {% when 2 %}
+                  {% if product.selected_variant.option2 == value %}
+                    {% assign is_selected = true %}
+                  {% endif %}
+                {% when 3 %}
+                  {% if product.selected_variant.option3 == value %}
+                    {% assign is_selected = true %}
+                  {% endif %}
+              {% endcase %}
+            {% else %}
+              {% if forloop.first %}
+                {% assign is_selected = true %}
+              {% endif %}
+            {% endif %}
+
+            {% assign option_class = '' %}
+            {% if option.name contains 'Color' or option.name contains 'Colour' %}
+              {% assign option_class = 'ai-color-option-' | append: ai_gen_id %}
+            {% elsif option.name contains 'Size' %}
+              {% assign option_class = 'ai-size-option-' | append: ai_gen_id %}
+            {% endif %}
+
+            <div class="ai-variant-option-{{ ai_gen_id }} {{ option_class }} {% unless is_available %}ai-variant-unavailable-{{ ai_gen_id }}{% endunless %}">
+              <input
+                type="radio"
+                id="ai-variant-{{ ai_gen_id }}-{{ option.position }}-{{ forloop.index }}"
+                name="ai-variant-{{ ai_gen_id }}-{{ option.position }}"
+                value="{{ value | escape }}"
+                class="ai-variant-option-input-{{ ai_gen_id }}"
+                data-option-position="{{ option.position }}"
+                {% if is_selected %}checked{% endif %}
+                {% unless is_available %}disabled{% endunless %}
+              >
+              <label
+                for="ai-variant-{{ ai_gen_id }}-{{ option.position }}-{{ forloop.index }}"
+                class="ai-variant-option-button-{{ ai_gen_id }}"
+              >
+                {% if option.name contains 'Color' or option.name contains 'Colour' %}
+                  {% assign color_value = value | downcase | replace: ' ', '' | replace: '-', '' %}
+                  {% assign color_hex = '' %}
+                  
+                  {% case color_value %}
+                    {% when 'red' or 'crimson' %}
+                      {% assign color_hex = '#DC2626' %}
+                    {% when 'blue' or 'royal' or 'royalblue' %}
+                      {% assign color_hex = '#2563EB' %}
+                    {% when 'green' or 'forest' or 'emerald' %}
+                      {% assign color_hex = '#059669' %}
+                    {% when 'yellow' or 'golden' %}
+                      {% assign color_hex = '#EAB308' %}
+                    {% when 'orange' or 'tangerine' %}
+                      {% assign color_hex = '#EA580C' %}
+                    {% when 'purple' or 'violet' %}
+                      {% assign color_hex = '#7C3AED' %}
+                    {% when 'pink' or 'rose' %}
+                      {% assign color_hex = '#EC4899' %}
+                    {% when 'brown' or 'chocolate' or 'coffee' %}
+                      {% assign color_hex = '#92400E' %}
+                    {% when 'black' or 'charcoal' %}
+                      {% assign color_hex = '#1F2937' %}
+                    {% when 'white' or 'ivory' or 'cream' %}
+                      {% assign color_hex = '#F9FAFB' %}
+                    {% when 'gray' or 'grey' or 'silver' %}
+                      {% assign color_hex = '#6B7280' %}
+                    {% when 'navy' or 'midnight' %}
+                      {% assign color_hex = '#1E3A8A' %}
+                    {% when 'beige' or 'tan' %}
+                      {% assign color_hex = '#D2B48C' %}
+                    {% when 'gold' %}
+                      {% assign color_hex = '#F59E0B' %}
+                    {% when 'teal' or 'turquoise' %}
+                      {% assign color_hex = '#0D9488' %}
+                    {% when 'maroon' or 'burgundy' %}
+                      {% assign color_hex = '#991B1B' %}
+                    {% when 'olive' %}
+                      {% assign color_hex = '#65A30D' %}
+                    {% when 'coral' %}
+                      {% assign color_hex = '#F97316' %}
+                    {% when 'lavender' %}
+                      {% assign color_hex = '#A78BFA' %}
+                    {% when 'mint' %}
+                      {% assign color_hex = '#6EE7B7' %}
+                    {% else %}
+                      {% assign color_hex = '#9CA3AF' %}
+                  {% endcase %}<span
+                    class="ai-color-swatch-{{ ai_gen_id }}"
+                    style="background-color: {{ color_hex }};"
+                  ></span>
+                {% endif %}
+                
+                <span class="ai-variant-option-text-{{ ai_gen_id }}">{{ value }}</span>
+              </label>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  {% endif %}
+</variant-picker-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class VariantPicker{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.productId = this.dataset.productId;
+        this.currentVariant = null;
+      }
+
+      connectedCallback() {
+        this.setupEventListeners();
+        this.selectFirstAvailableVariant();
+      }
+
+      setupEventListeners() {
+        const inputs = this.querySelectorAll('.ai-variant-option-input-{{ ai_gen_id }}');
+        inputs.forEach(input => {
+          input.addEventListener('change', this.handleOptionChange.bind(this));
+        });
+      }
+
+      selectFirstAvailableVariant() {
+        const optionGroups = this.querySelectorAll('.ai-variant-option-group-{{ ai_gen_id }}');
+        optionGroups.forEach((group, index) => {
+          const firstAvailableInput = group.querySelector('.ai-variant-option-input-{{ ai_gen_id }}:not([disabled])');
+          if (firstAvailableInput && !group.querySelector('.ai-variant-option-input-{{ ai_gen_id }}:checked')) {
+            firstAvailableInput.checked = true;
+          }
+        });
+
+        this.updateVariant();
+        this.updateSelectedValueDisplay();
+      }
+
+      handleOptionChange(event) {
+        this.updateVariant();
+        this.updateSelectedValueDisplay();
+        this.updateUrl();
+      }
+
+      updateSelectedValueDisplay() {
+        const labels = this.querySelectorAll('.ai-variant-option-label-{{ ai_gen_id }}');
+        labels.forEach((label, index) => {
+          const group = label.closest('.ai-variant-option-group-{{ ai_gen_id }}');
+          const selectedInput = group.querySelector('.ai-variant-option-input-{{ ai_gen_id }}:checked');
+          const selectedValueSpan = label.querySelector('.ai-variant-selected-value-{{ ai_gen_id }}');
+          
+          if (selectedInput && selectedValueSpan) {
+            selectedValueSpan.textContent = selectedInput.value;
+          }
+        });
+      }
+
+      updateVariant() {
+        const selectedOptions = this.getSelectedOptions();
+        const variant = this.findVariantByOptions(selectedOptions);
+        
+        if (variant) {
+          this.currentVariant = variant;
+          this.updateAvailability();
+          this.dispatchVariantChange(variant);
+        }
+      }
+
+      getSelectedOptions() {
+        const options = {};
+        const inputs = this.querySelectorAll('.ai-variant-option-input-{{ ai_gen_id }}:checked');
+        
+        inputs.forEach(input => {
+          const position = input.dataset.optionPosition;
+          options[position] = input.value;
+        });
+        
+        return options;
+      }
+
+      findVariantByOptions(selectedOptions) {
+        const productData = window.productData || {};
+        const variants = productData.variants || [];
+        
+        return variants.find(variant => {
+          return Object.keys(selectedOptions).every(position => {
+            const optionKey = `option${position}`;
+            return variant[optionKey] === selectedOptions[position];
+          });
+        });
+      }
+
+      updateAvailability() {
+        const inputs = this.querySelectorAll('.ai-variant-option-input-{{ ai_gen_id }}');
+        inputs.forEach(input => {
+          const option = input.closest('.ai-variant-option-{{ ai_gen_id }}');
+          if (!input.disabled) {
+            option.classList.remove('ai-variant-unavailable-{{ ai_gen_id }}');
+          }
+        });
+      }
+
+      updateUrl() {
+        if (this.currentVariant) {
+          const url = new URL(window.location);
+          url.searchParams.set('variant', this.currentVariant.id);
+          window.history.replaceState({}, '', url);
+        }
+      }
+
+      dispatchVariantChange(variant) {
+        const event = new CustomEvent('variant:change', {
+          detail: { variant },
+          bubbles: true
+        });
+        this.dispatchEvent(event);
+      }
+    }
+
+    customElements.define('variant-picker-{{ ai_gen_id }}', VariantPicker{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Variant Picker",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout & Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding",
+      "min": 16,
+      "max": 48,
+      "step": 4,
+      "unit": "px",
+      "label": "Container padding",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "label": "Container border radius",
+      "default": 12
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Container border color",
+      "default": "#e5e7eb"
+    },
+    {
+      "type": "select",
+      "id": "shadow_style",
+      "label": "Shadow style",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "0 1px 3px rgba(0, 0, 0, 0.1)",
+          "label": "Subtle"
+        },
+        {
+          "value": "0 4px 6px rgba(0, 0, 0, 0.1)",
+          "label": "Medium"
+        },
+        {
+          "value": "0 10px 15px rgba(0, 0, 0, 0.1)",
+          "label": "Strong"
+        }
+      ],
+      "default": "0 4px 6px rgba(0, 0, 0, 0.1)"
+    },
+    {
+      "type": "header",
+      "content": "Option Labels"
+    },
+    {
+      "type": "range",
+      "id": "label_font_size",
+      "min": 14,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Label font size",
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "label_font_weight",
+      "label": "Label font weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semibold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "600"
+    },
+    {
+      "type": "select",
+      "id": "label_text_transform",
+      "label": "Label text transform",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "uppercase",
+          "label": "Uppercase"
+        },
+        {
+          "value": "capitalize",
+          "label": "Capitalize"
+        }
+      ],
+      "default": "uppercase"
+    },
+    {
+      "type": "color",
+      "id": "label_color",
+      "label": "Label color",
+      "default": "#1f2937"
+    },
+    {
+      "type": "color",
+      "id": "selected_value_color",
+      "label": "Selected value color",
+      "default": "#6b7280"
+    },
+    {
+      "type": "header",
+      "content": "Option Buttons"
+    },
+    {
+      "type": "range",
+      "id": "option_padding_x",
+      "min": 12,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "label": "Horizontal padding",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "option_padding_y",
+      "min": 8,
+      "max": 16,
+      "step": 2,
+      "unit": "px",
+      "label": "Vertical padding",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "option_border_radius",
+      "min": 0,
+      "max": 16,
+      "step": 2,
+      "unit": "px",
+      "label": "Option border radius",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "option_font_size",
+      "min": 12,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "label": "Option font size",
+      "default": 14
+    },
+    {
+      "type": "select",
+      "id": "option_font_weight",
+      "label": "Option font weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semibold"
+        }
+      ],
+      "default": "500"
+    },
+    {
+      "type": "select",
+      "id": "option_text_transform",
+      "label": "Option text transform",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "uppercase",
+          "label": "Uppercase"
+        },
+        {
+          "value": "capitalize",
+          "label": "Capitalize"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "unit": "px",
+      "label": "Border width",
+      "default": 2
+    },
+    {
+      "type": "color",
+      "id": "option_background",
+      "label": "Option background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "option_text_color",
+      "label": "Option text color",
+      "default": "#374151"
+    },
+    {
+      "type": "color",
+      "id": "option_border_color",
+      "label": "Option border color",
+      "default": "#e5e7eb"
+    },
+    {
+      "type": "header",
+      "content": "Hover State"
+    },
+    {
+      "type": "color",
+      "id": "hover_background",
+      "label": "Hover background",
+      "default": "#f9fafb"
+    },
+    {
+      "type": "color",
+      "id": "hover_text_color",
+      "label": "Hover text color",
+      "default": "#1f2937"
+    },
+    {
+      "type": "color",
+      "id": "hover_border_color",
+      "label": "Hover border color",
+      "default": "#d1d5db"
+    },
+    {
+      "type": "header",
+      "content": "Selected State"
+    },
+    {
+      "type": "color",
+      "id": "selected_background",
+      "label": "Selected background",
+      "default": "#1f2937"
+    },
+    {
+      "type": "color",
+      "id": "selected_text_color",
+      "label": "Selected text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "selected_border_color",
+      "label": "Selected border color",
+      "default": "#1f2937"
+    },
+    {
+      "type": "color",
+      "id": "focus_color",
+      "label": "Focus outline color",
+      "default": "#3b82f6"
+    },
+    {
+      "type": "header",
+      "content": "Unavailable State"
+    },
+    {
+      "type": "color",
+      "id": "unavailable_background",
+      "label": "Unavailable background",
+      "default": "#f3f4f6"
+    },
+    {
+      "type": "color",
+      "id": "unavailable_text_color",
+      "label": "Unavailable text color",
+      "default": "#9ca3af"
+    },
+    {
+      "type": "header",
+      "content": "Color Swatches"
+    },
+    {
+      "type": "range",
+      "id": "color_swatch_size",
+      "min": 20,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Color swatch size",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "color_swatch_border_radius",
+      "min": 0,
+      "max": 16,
+      "step": 2,
+      "unit": "px",
+      "label": "Color swatch border radius",
+      "default": 4
+    }
+  ],
+  "presets": [
+    {
+      "name": "Variant Picker"
+    }
+  ]
+}
+{% endschema %}
