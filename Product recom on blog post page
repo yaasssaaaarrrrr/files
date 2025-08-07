@@ -1,0 +1,118 @@
+{% assign recommendations = article.metafields.custom.product_recom.value %}
+
+{% if recommendations != blank %}
+  <div class="recommended-products-sticky">
+    <h3 class="recommended-title">Wear It With</h3>
+    <div class="recommended-products-grid">
+      {% for recommended_product in recommendations %}
+        {% assign p = all_products[recommended_product.handle] %}
+        {% if p %}
+          <div class="recommended-product-card">
+            <a href="{{ p.url }}">
+              {% if p.featured_image %}
+                <img src="{{ p.featured_image | img_url: '400x' }}" alt="{{ p.title }}" />
+              {% endif %}
+              <p class="recommended-product-title">{{ p.title }}</p>
+              <p class="recommended-product-price">
+                {% if p.compare_at_price > p.price %}
+                  <span class="sale-price">{{ p.price | money }}</span>
+                  <span class="compare-price">{{ p.compare_at_price | money }}</span>
+                {% else %}
+                  <span>{{ p.price | money }}</span>
+                {% endif %}
+              </p>
+            </a>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+<style>
+.recommended-products-sticky {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #fff;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 9999;
+  max-width: 300px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.recommended-title {
+  margin-bottom: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.recommended-products-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.recommended-product-card {
+  text-align: center;
+}
+
+.recommended-product-card img {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.recommended-product-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.recommended-product-price {
+  font-size: 13px;
+}
+
+.sale-price {
+  color: #1e4496;
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.compare-price {
+  text-decoration: line-through;
+  color: #999;
+  font-size: 12px;
+}
+
+/* 🔽 Mobile Responsive */
+@media (max-width: 767px) {
+  .recommended-products-sticky {
+    bottom: 12px;
+    right: 12px;
+    max-width: 220px;
+    padding: 10px;
+  }
+
+  .recommended-title {
+    font-size: 14px;
+  }
+
+  .recommended-product-title {
+    font-size: 12px;
+  }
+
+  .recommended-product-price {
+    font-size: 12px;
+  }
+
+  .sale-price,
+  .compare-price {
+    font-size: 11px;
+  }
+}
+</style>
